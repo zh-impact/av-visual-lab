@@ -1,9 +1,9 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWavesurfer } from "@wavesurfer/react";
-import WaveSurfer from "wavesurfer.js";
 import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
 import Spectrogram from "wavesurfer.js/dist/plugins/spectrogram.esm.js";
+import { Button } from "@mantine/core";
 
 const formatTime = (seconds: number) =>
   [seconds / 60, seconds % 60]
@@ -11,6 +11,7 @@ const formatTime = (seconds: number) =>
     .join(":");
 
 export default function Audio() {
+  const urlRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
@@ -18,7 +19,7 @@ export default function Audio() {
     height: 100,
     waveColor: "rgb(200, 0, 200)",
     progressColor: "rgb(100, 0, 100)",
-    url: "http://localhost:8899/18.mp3",
+    url: "http://localhost:8899/此去半生.mp3",
     plugins: useMemo(
       () => [
         Timeline.create(),
@@ -57,7 +58,11 @@ export default function Audio() {
 
   const onFileUpload = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (urlRef.current) {
+        URL.revokeObjectURL(urlRef.current);
+      }
       const url = URL.createObjectURL(e.target.files?.[0]!);
+      urlRef.current = url;
       wavesurfer?.load(url);
       // loadBlob has some bugs: https://github.com/katspaugh/wavesurfer.js/blob/f9d7ce08a6e7e6d009d4f8b58f1a3b6e8ea8c266/src/wavesurfer.ts#L463
     },
@@ -65,7 +70,7 @@ export default function Audio() {
   );
 
   return (
-    <div>
+    <div className="p-4">
       <h1>Audio</h1>
 
       <input type="file" onChange={onFileUpload} />
@@ -75,10 +80,16 @@ export default function Audio() {
       <p>Current time: {formatTime(currentTime)}</p>
 
       <div style={{ margin: "1em 0", display: "flex", gap: "1em" }}>
-        <button onClick={onPlayPause} style={{ minWidth: "5em" }}>
+        <Button onClick={onPlayPause} style={{ minWidth: "5em" }}>
           {isPlaying ? "Pause" : "Play"}
-        </button>
+        </Button>
       </div>
+
+      {[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map((time) => (
+        <Button key={time} onClick={() => wavesurfer?.seekTo(time)}>
+          {time}
+        </Button>
+      ))}
     </div>
   );
 }
