@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useWavesurfer } from "@wavesurfer/react";
 import WaveSurfer from "wavesurfer.js";
-// import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
+import Timeline from "wavesurfer.js/dist/plugins/timeline.esm.js";
+import Spectrogram from "wavesurfer.js/dist/plugins/spectrogram.esm.js";
 
 const formatTime = (seconds: number) =>
   [seconds / 60, seconds % 60]
@@ -12,30 +13,40 @@ const formatTime = (seconds: number) =>
 export default function Audio() {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { wavesurfer, isPlaying, isReady, currentTime } = useWavesurfer({
+  const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
     container: containerRef,
     height: 100,
     waveColor: "rgb(200, 0, 200)",
     progressColor: "rgb(100, 0, 100)",
-    // plugins: useMemo(() => [Timeline.create()], []),
+    url: "http://localhost:8899/18.mp3",
+    plugins: useMemo(
+      () => [
+        Timeline.create(),
+        Spectrogram.create({
+          labels: true,
+          height: 200,
+          scale: "mel",
+          frequencyMax: 8000,
+          frequencyMin: 0,
+          fftSamples: 1024,
+          labelsBackground: "rgba(0,0,0,0.1)",
+        }),
+      ],
+      []
+    ),
   });
 
   useEffect(() => {
     if (wavesurfer) {
       wavesurfer.on("ready", () => {
         console.log("ready");
-      });
-      wavesurfer.on("play", () => {
-        console.log("play");
-      });
-      wavesurfer.on("pause", () => {
-        console.log("pause");
-      });
-      wavesurfer.on("load", () => {
-        console.log("load");
+        // wavesurfer.registerPlugin(Timeline.create());
       });
       wavesurfer.on("decode", (decodedData) => {
         console.log("decode", decodedData);
+      });
+      wavesurfer.on("click", () => {
+        wavesurfer?.play();
       });
     }
   }, [wavesurfer]);
@@ -62,7 +73,6 @@ export default function Audio() {
       <div ref={containerRef} />
 
       <p>Current time: {formatTime(currentTime)}</p>
-      <p>Is ready: {isReady.toString()}</p>
 
       <div style={{ margin: "1em 0", display: "flex", gap: "1em" }}>
         <button onClick={onPlayPause} style={{ minWidth: "5em" }}>
