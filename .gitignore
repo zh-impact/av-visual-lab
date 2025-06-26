@@ -50,3 +50,6 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Project files
+local

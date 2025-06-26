@@ -16,7 +16,7 @@ export default function Audio() {
 
   const { wavesurfer, isPlaying, currentTime } = useWavesurfer({
     container: containerRef,
-    height: 100,
+    height: 150,
     waveColor: "rgb(200, 0, 200)",
     progressColor: "rgb(100, 0, 100)",
     url: "http://localhost:8899/此去半生.mp3",
@@ -79,17 +79,19 @@ export default function Audio() {
 
       <p>Current time: {formatTime(currentTime)}</p>
 
-      <div style={{ margin: "1em 0", display: "flex", gap: "1em" }}>
-        <Button onClick={onPlayPause} style={{ minWidth: "5em" }}>
+      <div className="flex gap-2 my-2">
+        <Button w="10em" onClick={onPlayPause}>
           {isPlaying ? "Pause" : "Play"}
         </Button>
       </div>
 
+      <Button.Group>
       {[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1].map((time) => (
-        <Button key={time} onClick={() => wavesurfer?.seekTo(time)}>
+        <Button key={time} w="5em" onClick={() => wavesurfer?.seekTo(time)}>
           {time}
         </Button>
       ))}
+      </Button.Group>
     </div>
   );
 }
